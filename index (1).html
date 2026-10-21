@@ -1,0 +1,263 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='white'/%3E%3Cg fill='none' stroke='black' stroke-width='4'%3E%3Crect x='4' y='4' width='56' height='56'/%3E%3Cpath d='M22.7 4V60M41.3 4V60M4 22.7H60M4 41.3H60'/%3E%3C/g%3E%3Crect x='24.7' y='24.7' width='14.6' height='14.6' fill='%23e8322e'/%3E%3C/svg%3E">
+<title>Goal Grid</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@400;500;600&family=Mrs+Saint+Delafield&display=swap">
+<style>
+/* layout: one narrow column, one question per screen, a square 9x9 grid builds up as you answer. single look: black on white */
+:root{
+  --bg:#ffffff; --fg:#000000; --muted:#707070; --line:#000000; --soft:#e6e6e6; --chip:#f3f3f3;
+  --accent:#e8322e;
+  --narrow:"Arial Narrow","Archivo Narrow","Helvetica Neue",Arial,sans-serif;
+  --script:"Mrs Saint Delafield","Snell Roundhand",cursive;
+  color-scheme:light;
+}
+body{background:var(--bg);color:var(--fg);font-family:var(--narrow);font-size:17px;line-height:1.4;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{display:block;height:48px;width:auto;max-width:100%;object-fit:contain}
+.handle{color:var(--muted);font-size:14px}
+.bar{height:2px;background:var(--soft)} .bar i{display:block;height:100%;background:var(--fg);width:0;transition:width .3s}
+.step-label{color:var(--muted);font-size:14px;letter-spacing:.04em}
+h1{font-weight:500;font-size:clamp(28px,6vw,40px);line-height:1.08;margin:0;text-wrap:balance;text-transform:lowercase}
+h1 em{font-style:normal;color:var(--accent)}
+.hint{color:var(--muted);margin:0;max-width:56ch}
+input[type=text]{width:100%;box-sizing:border-box;font:inherit;font-size:19px;color:var(--fg);background:transparent;
+  border:0;border-bottom:1px solid var(--line);padding:10px 0;border-radius:0;outline:none;min-width:0}
+input[type=text]:focus{border-bottom-color:var(--accent)}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px}
+.fields label{display:flex;gap:8px;align-items:baseline;min-width:0}
+.fields label span{color:var(--muted);font-size:13px;width:14px;flex:none}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-size:15px;background:var(--chip);color:var(--fg);border:1px solid transparent;border-radius:999px;padding:6px 12px;cursor:pointer}
+.chip:hover{border-color:var(--line)} .chip.used{opacity:.3;pointer-events:none}
+.cats{display:flex;flex-wrap:wrap;gap:6px}
+.cat{font:inherit;font-size:14px;background:transparent;color:var(--fg);border:1px solid var(--line);padding:4px 10px;cursor:pointer;text-transform:lowercase}
+.cat.on{background:var(--fg);color:var(--bg)}
+.chips-title{font-size:13px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin:0}
+.search{font-size:16px!important}
+.nav{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+button.main,button.ghost{font:inherit;font-size:17px;cursor:pointer;padding:12px 22px;border-radius:0}
+button.main{background:var(--fg);color:var(--bg);border:1px solid var(--fg)}
+button.ghost{background:transparent;color:var(--fg);border:1px solid transparent;padding-left:0}
+button:focus-visible,.chip:focus-visible,.cat:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.err{color:var(--accent);font-size:14px;min-height:1em;margin:0}
+/* grid: one 9x9 css grid, square cells, thick lines between 3x3 blocks */
+.grid-box{overflow-x:auto}
+.grid{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:repeat(9,minmax(0,1fr));
+  aspect-ratio:1/1;width:100%;max-width:100%;min-width:300px;box-sizing:border-box;border-top:2px solid var(--line);border-left:2px solid var(--line)}
+.cell{box-sizing:border-box;min-width:0;min-height:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;
+  font-size:clamp(6.5px,1.5vw,10.5px);line-height:1.1;padding:2px;word-break:break-word;hyphens:auto;text-transform:lowercase}
+.cell.br{border-right:2px solid var(--line)} .cell.bb{border-bottom:2px solid var(--line)}
+.cell.hub{color:var(--accent);font-size:clamp(7.5px,1.75vw,12.5px)}
+.cell.goal{color:var(--accent);font-weight:600;font-size:clamp(8px,1.9vw,13.5px)}
+.cell.now{background:var(--chip)}
+/* rhythm */
+.pillar-group{display:flex;flex-direction:column;gap:6px}
+.pillar-group h3{margin:6px 0 2px;font-weight:500;color:var(--accent);text-transform:lowercase;font-size:18px}
+.row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;border-bottom:1px solid var(--soft);padding:4px 0}
+.row .t{min-width:0;overflow-wrap:anywhere}
+.seg{display:flex;border:1px solid var(--line)}
+.seg button{font:inherit;font-size:13px;background:transparent;color:var(--fg);border:0;padding:5px 8px;cursor:pointer}
+.seg button.on{background:var(--fg);color:var(--bg)}
+.star{font:inherit;background:transparent;border:0;color:var(--fg);cursor:pointer;font-size:24px;line-height:1;padding:0 2px}
+.star.on{color:var(--accent)}
+/* plan */
+.plan{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.plan section{min-width:0}
+.plan h3,.start h3{font-weight:500;margin:0 0 6px;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.plan ul,.start ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px}
+.plan li small{color:var(--muted)}
+.start{border:1px solid var(--line);padding:16px}
+.start ol{font-size:19px}
+.closing{font-family:var(--script);font-size:38px;line-height:1;margin:0}
+@media (max-width:560px){.fields{grid-template-columns:1fr}.plan{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+
+<div class="wrap">
+  <header><img class="logo" src="data:image/png;base64,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" alt="Wellness for Quitters." width="859" height="144"><div class="handle">@thewellnessforquitters</div></header>
+  <div class="bar"><i id="bar"></i></div>
+  <main id="screen" class="wrap" style="gap:20px" aria-live="polite"></main>
+</div>
+
+<script>
+/* ---------- content library ---------- */
+const GOALS = {
+  "glow up":["my best self","that girl era","the most disciplined version of me","glow up in 6 months","main character energy","the healthiest year of my life","become someone i'm proud of","reinvent myself"],
+  "body":["a calm, healthy body","feel good in my body","get strong","run a 10k","first pull-up","flexible and pain-free","more energy every day","toned and fit","heal my gut","fix my sleep","better posture"],
+  "beauty":["glowing skin","clear skin","healthy long hair","look rested every day","polished everyday look","my signature style"],
+  "mind":["a calm mind","less anxiety","more confidence","stop procrastinating","love myself more","less screen time","quit sugar","be more present"],
+  "money":["my first $1000 online","save my first $5000","financial independence","pay off my debt","start a side business","a better-paid job","learn to invest"],
+  "life":["move abroad","learn a new language","get into my dream uni","read 30 books this year","a beautiful home","travel more","build real friendships","a balanced student life","launch my own brand","finish my degree strong"]
+};
+const PILLARS = ["sleep","food","movement","skin","mind","money","hobbies","education","home","style","career","people","health","hair","body care","digital","morning","evening","confidence","discipline","study","travel","creativity","spirituality","nutrition","energy","social media","business","love","fun"];
+const ACTIONS = {
+  sleep:["same wake-up time","dark room","cold room","phone out of bedroom","no coffee after 2pm","no late meals","read in bed","8 hours","red light in the evening","wind-down routine","no screens 1h before bed","magnesium","sleep mask","earplugs","fresh sheets","nap max 20 min","morning sunlight","bed only for sleep","journal before bed","same bedtime"],
+  food:["protein every meal","fiber daily","cook at home","fruit daily","less sugar","water first","eat sitting down","no skipping meals","vegetables at lunch","meal plan on sunday","healthy snacks ready","no eating from the pack","chew slowly","greek yogurt breakfast","psyllium","less ultra-processed","new healthy recipe","grocery list","eat before coffee","dessert after meals"],
+  nutrition:["protein every meal","fiber daily","omega-3","fruit daily","2 litres water","vegetables at every meal","less sugar","fermented food","nuts daily","legumes 3x a week","read labels","vitamin d","less alcohol","home lunch","balanced plate"],
+  movement:["10k steps","pilates 3x a week","stretch daily","hip mobility","strength 2x a week","take the stairs","walk after meals","hike monthly","yoga sunday","dance class","swim weekly","morning walk","run 3x a week","workout clothes ready","home workout","stand every hour","cycle to class","try a new sport","rest day","posture exercises"],
+  skin:["spf daily","cleanse at night","moisturize","clean pillowcase","hands off face","drink water","facial monthly","no makeup to bed","retinol 2x a week","vitamin c serum","exfoliate weekly","face massage","clean makeup brushes","lip care","eye cream","dermatologist yearly","less sugar","silk pillowcase","ice roller","patch test new products"],
+  hair:["hair oil weekly","silk scrunchies","heat protection","trim every 3 months","scalp massage","wash 2-3x a week","hair mask","no tight ponytails","silk pillowcase","gentle shampoo","biotin","air dry"],
+  "body care":["body lotion daily","dry brushing","body scrub weekly","manicure","pedicure","spf on hands","deodorant","shave or wax routine","foot cream","bath with salts","massage monthly","posture check"],
+  mind:["journal","no phone in the morning","gratitude list","less news","alone time","meditate","therapy","affirmations","breathwork","nature walk","digital sunset","say no","talk kindly to myself","read before scrolling","worry list","mood check-in","morning pages","visualize","silence 10 min","unfollow toxic accounts"],
+  confidence:["affirmations","good posture","dress up","speak first in class","compliment list","eye contact","one brave thing a week","stop apologizing","celebrate small wins","workout","learn a skill","public speaking practice"],
+  discipline:["plan tomorrow tonight","3 priorities a day","phone in another room","pomodoro","start with the hardest task","no snooze","weekly review","habit tracker","finish what i start","2-minute rule","same routine weekends","accountability friend"],
+  money:["monthly budget","save 10%","no impulse buys","track spending","invest a little","quality over cheap","side income","learn finance","emergency fund","24h rule before buying","cancel unused subscriptions","cash envelope","sell what i don't use","compare prices","finance podcast","no-spend week","payday savings transfer","price per wear","money journal","ask for a raise"],
+  business:["post daily","one product idea a week","talk to a customer","learn marketing","track numbers weekly","email list","study a competitor","pitch someone","create content in batches","learn canva","set a revenue goal","ask for testimonials"],
+  career:["one deep-work hour","update cv","learn one tool","reach out to 1 person","portfolio","weekly review","ask for feedback","say no to busywork","linkedin post","online course","find a mentor","apply to 3 jobs","learn excel","networking event","industry news","side project"],
+  education:["10 pages a day","language practice","online course","podcast","new skill","documentary","notes","ted talk","flashcards","teach someone","study group","library day","duolingo","write a summary","museum lecture","one new word a day"],
+  study:["plan the week","pomodoro","study at the library","phone off while studying","review notes daily","flashcards","past papers","ask questions in class","study group","sleep before exams","clean desk","one subject a day","summaries","explain it out loud","start assignments early","reward breaks"],
+  hobbies:["read","paint","new recipe","photography","dance","museum","music","craft","pottery","knitting","journaling","gardening","learn an instrument","film club","puzzles","baking","writing","thrifting","collage","sewing"],
+  creativity:["sketch daily","moodboard","creative hour","new playlist","photo walk","write a page","try a new medium","visit a gallery","pinterest board","diy project","film a video","edit a photo"],
+  home:["make bed","clean one surface","fresh sheets weekly","candles","plants","declutter monthly","fresh flowers","laundry day","dishes before bed","10-min tidy","organize one drawer","open windows","nice scent","clean fridge weekly","declutter wardrobe","cozy corner"],
+  style:["iron clothes","capsule wardrobe","clean nails","nice pajamas","good posture","signature scent","clean bag","dress up for no reason","plan outfits","tailor clothes","shoe care","one quality piece","declutter closet","accessories","style moodboard","lint roller"],
+  people:["call family","plan a date","one real conversation","reply to friends","host a dinner","less doom texting","send a voice note","new friend","birthday reminders","gift for no reason","say thank you","listen more","weekly friend date","join a club","write a letter","forgive someone"],
+  love:["date night","say i love you","love letters","phone-free dinner","plan a trip together","learn their love language","weekly check-in","small surprises","cook together","shared goal"],
+  health:["check-up yearly","dentist twice a year","vitamins","sunlight daily","no smoking","less alcohol","posture breaks","water bottle with you","floss","eye breaks","nose breathing","stretch neck","blood test yearly","hand washing","gut-friendly food","track my cycle"],
+  energy:["morning sunlight","water first","protein breakfast","walk after lunch","no sugar crash","power nap","cold water on face","breathwork","less caffeine","stretch breaks","fresh air","early night"],
+  digital:["screen time limit","phone out of bedroom","grayscale mode","no phone first hour","unfollow accounts","notifications off","one social app only","digital sunday","delete unused apps","clean photo gallery","inbox zero weekly","no phone at meals"],
+  "social media":["post daily","batch content sunday","reply to comments","study what works","limit scrolling","plan a content calendar","new format weekly","engage 15 min","check analytics weekly","story every day"],
+  morning:["wake at the same time","water first","make bed","sunlight","stretch","no phone 30 min","protein breakfast","plan the day","skincare","journal","walk","get dressed"],
+  evening:["tidy 10 min","skincare","plan tomorrow","shower","read","no screens 1h","tea","journal","stretch","lay out clothes","dim lights","bed on time"],
+  travel:["save for a trip","learn local phrases","travel list","weekend trip monthly","pack light","try local food","solo trip","plan one adventure","travel journal","new city a year"],
+  spirituality:["pray","meditate","gratitude","time in nature","read something meaningful","silence","kindness every day","reflect weekly","volunteer","values list"],
+  fun:["something silly weekly","new place monthly","game night","dance at home","concert","picnic","spontaneous plan","movie night","laugh with friends","say yes more"]
+};
+const GENERIC = ["5 minutes a day","once a week","plan it on sunday","tell a friend","remove one obstacle","prepare the night before","track it","reward myself","learn the basics","ask someone who does it","schedule it","do it with a friend","set a reminder","small version first","one hour a week","review monthly"];
+const EXAMPLE = {goal:"my best self",pillars:["sleep","mind","skin","money","movement","food","hobbies","education"],
+  actions:["sleep","mind","skin","money","movement","food","hobbies","education"].map(k=>ACTIONS[k].slice(0,8))};
+
+/* ---------- state ---------- */
+const fresh = () => ({step:0,goal:"",pillars:Array(8).fill(""),actions:Array.from({length:8},()=>Array(8).fill("")),freq:{},stars:[]});
+let S = fresh(), goalCat="glow up", q="";
+try{const s=JSON.parse(localStorage.getItem("goalgrid")||"null"); if(s&&s.actions) S=s;}catch(e){}
+const save=()=>{try{localStorage.setItem("goalgrid",JSON.stringify(S))}catch(e){}};
+
+const TOTAL=12;
+const $=s=>document.querySelector(s);
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const AROUND=[0,1,2,3,5,6,7,8];
+
+function cellText(b,c){
+  if(b===4) return c===4?{t:S.goal,k:"goal"}:{t:S.pillars[AROUND.indexOf(c)],k:"hub"};
+  const p=AROUND.indexOf(b); return c===4?{t:S.pillars[p],k:"hub",p}:{t:S.actions[p][AROUND.indexOf(c)],k:"",p};
+}
+function gridHTML(highlight){
+  let h='<div class="grid-box"><div class="grid" role="img" aria-label="goal grid">';
+  for(let r=0;r<9;r++) for(let col=0;col<9;col++){
+    const b=Math.floor(r/3)*3+Math.floor(col/3), c=(r%3)*3+col%3, x=cellText(b,c);
+    let cls="cell"; if(col%3===2) cls+=" br"; if(r%3===2) cls+=" bb"; if(x.k) cls+=" "+x.k; if(highlight!==undefined&&x.p===highlight) cls+=" now";
+    h+=`<div class="${cls}">${esc(x.t||"")}</div>`;
+  }
+  return h+'</div></div>';
+}
+function chips(list,used,attr){
+  const f=q.trim().toLowerCase(), shown=f?list.filter(x=>x.includes(f)):list;
+  return '<div class="chips">'+(shown.map(x=>`<button class="chip${used.includes(x)?" used":""}" data-${attr}="${esc(x)}">${esc(x)}</button>`).join("")||'<span class="hint">nothing found. just type your own.</span>')+'</div>';
+}
+const searchBox=ph=>`<input type="text" class="search" id="q" placeholder="${ph}" value="${esc(q)}">`;
+const nav=(next="next",back=true)=>`<p class="err" id="err"></p><div class="nav">${back?'<button class="ghost" id="back">← back</button>':'<span></span>'}<button class="main" id="next">${next}</button></div>`;
+
+/* ---------- screens ---------- */
+function render(focusSearch){
+  $("#bar").style.width=(S.step/TOTAL*100)+"%";
+  const st=S.step, el=$("#screen"); let h="";
+  if(st===0){
+    let g; if(S.goal){g=gridHTML()} else {const keep=S; S=Object.assign(fresh(),EXAMPLE); g=gridHTML(); S=keep;}
+    h=`<h1>turn one big goal into <em>64 small actions</em></h1>
+    <p class="hint">answer a few questions and your grid fills itself. at the end you get a clear plan: what to do every day, every week and every month, and the 3 things to start with tomorrow. takes about 15 minutes.</p>
+    ${g}<p class="hint" style="font-size:14px">${S.goal?"your grid so far":"example grid"}</p>
+    <div class="nav"><button class="ghost" id="example">try with the example</button><button class="main" id="next">${S.goal?"continue":"start"}</button></div>`;
+  } else if(st===1){
+    h=`<div class="step-label">step 1 of 4 · your goal</div>
+    <h1>what do you want your life to look like?</h1>
+    <p class="hint">one goal for the center. it can be big. write it the way you'd say it to a friend, or pick one below.</p>
+    <input type="text" id="goal" maxlength="40" placeholder="e.g. my best self" value="${esc(S.goal)}">
+    <div class="cats">${Object.keys(GOALS).map(k=>`<button class="cat${k===goalCat?" on":""}" data-cat="${k}">${k}</button>`).join("")}</div>
+    ${chips(GOALS[goalCat],[S.goal],"goal")}${nav()}`;
+  } else if(st===2){
+    h=`<div class="step-label">step 2 of 4 · 8 areas</div>
+    <h1>what does <em>${esc(S.goal)}</em> depend on?</h1>
+    <p class="hint">name 8 areas of life that need to work for this goal to happen. tap to fill, or type your own.</p>
+    <div class="fields">${S.pillars.map((p,i)=>`<label><span>${i+1}</span><input type="text" data-p="${i}" maxlength="18" value="${esc(p)}"></label>`).join("")}</div>
+    <p class="chips-title">${PILLARS.length} areas to choose from</p>${searchBox("search areas")}${chips(PILLARS,S.pillars,"pill")}${nav()}`;
+  } else if(st>=3&&st<=10){
+    const p=st-3, name=S.pillars[p], key=name.toLowerCase().trim(), list=ACTIONS[key]||GENERIC;
+    const all=[...new Set(Object.values(ACTIONS).flat())].filter(x=>!list.includes(x));
+    h=`<div class="step-label">step 3 of 4 · area ${p+1} of 8</div>
+    <h1><em>${esc(name)}</em>: 8 small actions</h1>
+    <p class="hint">what would someone who already has this sorted do regularly? keep each one small and concrete.</p>
+    <div class="fields">${S.actions[p].map((a,i)=>`<label><span>${i+1}</span><input type="text" data-a="${i}" maxlength="26" value="${esc(a)}"></label>`).join("")}</div>
+    <p class="chips-title">${ACTIONS[key]?"ideas for "+esc(name):"ideas to adapt"}</p>${chips(list,S.actions[p],"act")}
+    <details><summary class="chips-title" style="cursor:pointer">more ideas from other areas (${all.length})</summary><div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">${searchBox("search all actions")}${chips(all,S.actions[p],"act")}</div></details>
+    ${gridHTML(p)}${nav(p===7?"see my grid":"next")}`;
+  } else if(st===11){
+    h=`<div class="step-label">step 4 of 4 · rhythm</div>
+    <h1>how often will you do each one?</h1>
+    <p class="hint">choose day, week or month. then star the <span style="color:var(--accent)">3 actions</span> you'll start with tomorrow: small, easy, no excuses.</p>`;
+    S.pillars.forEach((pn,p)=>{
+      h+=`<div class="pillar-group"><h3>${esc(pn)}</h3>`;
+      S.actions[p].forEach((a,i)=>{const id=p+"-"+i,f=S.freq[id]||"week",on=S.stars.includes(id);
+        h+=`<div class="row"><span class="t">${esc(a)}</span><div class="seg" role="group" aria-label="how often">${["day","week","month"].map(x=>`<button data-f="${id}" data-v="${x}" class="${f===x?"on":""}" aria-pressed="${f===x}">${x}</button>`).join("")}</div><button class="star${on?" on":""}" data-s="${id}" aria-label="start with this" aria-pressed="${on}">${on?"★":"☆"}</button></div>`;});
+      h+=`</div>`;});
+    h+=nav("build my plan");
+  } else {
+    const groups={day:[],week:[],month:[]};
+    S.pillars.forEach((pn,p)=>S.actions[p].forEach((a,i)=>groups[S.freq[p+"-"+i]||"week"].push(`${esc(a)} <small>· ${esc(pn)}</small>`)));
+    const starts=S.stars.map(id=>{const[p,i]=id.split("-").map(Number);return esc(S.actions[p][i])});
+    h=`<h1>your plan for <em>${esc(S.goal)}</em></h1>
+    <p class="hint">1 goal, 8 areas, 64 actions. screenshot it and keep it where you see it every day.</p>
+    ${gridHTML()}
+    <div class="start"><h3>start tomorrow with</h3><ol>${starts.map(s=>`<li>${s}</li>`).join("")}</ol></div>
+    <div class="plan">${[["day","every day"],["week","every week"],["month","every month"]].map(([k,t])=>`<section><h3>${t} (${groups[k].length})</h3><ul>${groups[k].map(x=>`<li>${x}</li>`).join("")||"<li>nothing here</li>"}</ul></section>`).join("")}</div>
+    <p class="closing">your map is ready. welcome to the club.</p>
+    <div class="nav"><button class="ghost" id="back">← edit rhythm</button><button class="main" id="copy">copy my plan</button></div>
+    <div class="nav"><button class="ghost" id="restart">start over</button><span class="err" id="err"></span></div>`;
+  }
+  el.innerHTML=h; bind(st);
+  if(focusSearch){const s=$("#q"); if(s){s.focus();s.setSelectionRange(s.value.length,s.value.length);} }
+  save();
+}
+
+function fillNext(arr,val){const i=arr.findIndex(x=>!x.trim()); if(i>=0) arr[i]=val;}
+function err(t){const e=$("#err"); if(e) e.textContent=t;}
+function go(n){S.step=n;q="";render();window.scrollTo(0,0);}
+function bind(st){
+  const on=(sel,fn)=>document.querySelectorAll(sel).forEach(fn);
+  $("#back")&&($("#back").onclick=()=>go(Math.max(0,st-1)));
+  $("#example")&&($("#example").onclick=()=>{S=Object.assign(fresh(),JSON.parse(JSON.stringify(EXAMPLE)));go(11);});
+  $("#restart")&&($("#restart").onclick=()=>{S=fresh();go(0);});
+  on("[data-cat]",b=>b.onclick=()=>{goalCat=b.dataset.cat;render();});
+  on("[data-goal]",b=>b.onclick=()=>{S.goal=b.dataset.goal;render();});
+  on("[data-pill]",b=>b.onclick=()=>{fillNext(S.pillars,b.dataset.pill);render();});
+  on("[data-act]",b=>b.onclick=()=>{fillNext(S.actions[st-3],b.dataset.act);const d=document.querySelector("details");const open=d&&d.open;render();if(open)document.querySelector("details").open=true;});
+  on("[data-p]",i=>i.oninput=()=>{S.pillars[+i.dataset.p]=i.value;save();});
+  on("[data-a]",i=>i.oninput=()=>{S.actions[st-3][+i.dataset.a]=i.value;save();});
+  $("#goal")&&($("#goal").oninput=e=>{S.goal=e.target.value;save();});
+  $("#q")&&($("#q").oninput=e=>{q=e.target.value;const d=document.querySelector("details");const open=d&&d.open;render(true);if(open)document.querySelector("details").open=true;});
+  on("[data-f]",b=>b.onclick=()=>{S.freq[b.dataset.f]=b.dataset.v;render();});
+  on("[data-s]",b=>b.onclick=()=>{const id=b.dataset.s,i=S.stars.indexOf(id);
+    if(i>=0)S.stars.splice(i,1); else if(S.stars.length<3)S.stars.push(id); else return err("you can star 3. unstar one first."); render();});
+  $("#next")&&($("#next").onclick=()=>{
+    if(st===1&&!S.goal.trim()) return err("write your goal or pick one.");
+    if(st===2&&S.pillars.some(p=>!p.trim())) return err("fill all 8 areas.");
+    if(st>=3&&st<=10&&S.actions[st-3].some(a=>!a.trim())) return err("fill all 8 actions.");
+    if(st===11&&S.stars.length<3) return err("star 3 actions to start with.");
+    go(st+1);
+  });
+  $("#copy")&&($("#copy").onclick=()=>{
+    const g={day:[],week:[],month:[]};
+    S.pillars.forEach((pn,p)=>S.actions[p].forEach((a,i)=>g[S.freq[p+"-"+i]||"week"].push(`- ${a} (${pn})`)));
+    const starts=S.stars.map(id=>{const[p,i]=id.split("-").map(Number);return "- "+S.actions[p][i]});
+    const txt=`my goal: ${S.goal}\n\nstart tomorrow with:\n${starts.join("\n")}\n\nevery day:\n${g.day.join("\n")}\n\nevery week:\n${g.week.join("\n")}\n\nevery month:\n${g.month.join("\n")}\n\nmade with @thewellnessforquitters`;
+    navigator.clipboard.writeText(txt).then(()=>err("copied. paste it into your notes."),()=>err("couldn't copy here. take a screenshot of the plan instead."));
+  });
+}
+render();
+</script>
+
+</body></html>
