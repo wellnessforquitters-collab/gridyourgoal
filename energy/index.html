@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>what's your energy type? · the wellness for quitters club</title>
+<meta name="description" content="draw your energy, find your golden hours. a free 2-minute test.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#111; --soft:#8c8c8c; --line:#e7e7e7; --red:#d23a2f; --redsoft:rgba(210,58,47,.12); --chip:#f2f2f2;
+    --font:"Geist",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#fff}
+  body{font-family:var(--font);color:var(--ink);text-transform:lowercase;-webkit-font-smoothing:antialiased}
+  main{max-width:560px;margin:0 auto;padding:22px 16px 64px;min-height:100vh;display:flex;flex-direction:column}
+
+  .top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+  .logo{height:46px;width:auto;display:block}
+  .handle{font-size:13px;color:var(--soft);padding-bottom:6px}
+  @media (max-width:430px){ .handle{display:none} .logo{height:40px} }
+  .bar{height:3px;background:var(--line);margin:14px 0 0;position:relative}
+  .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--ink);width:0;transition:width .4s ease}
+
+  .screen{flex:1;padding-top:30px;animation:in .35s ease both}
+  @keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .step{font-size:14px;color:var(--soft);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+  .back{background:none;border:0;font:inherit;font-size:14px;color:var(--ink);cursor:pointer;text-transform:lowercase;padding:4px 0}
+  h1{font-size:42px;line-height:1.02;font-weight:500;letter-spacing:-.04em;margin-bottom:16px}
+  h2{font-size:30px;line-height:1.05;font-weight:500;letter-spacing:-.03em;margin-bottom:22px}
+  h3{font-size:20px;font-weight:500;letter-spacing:-.02em;margin-bottom:10px}
+  .red{color:var(--red)}
+  p{font-size:17px;line-height:1.45;color:#555}
+  .muted{color:var(--soft)}
+
+  .opts{border-top:1px solid var(--ink)}
+  .opt{display:block;width:100%;text-align:left;font:inherit;font-size:19px;background:none;border:0;border-bottom:1px solid var(--ink);
+       padding:17px 0;color:var(--ink);cursor:pointer;text-transform:lowercase;transition:padding .15s,color .15s}
+  .opt:hover{padding-left:8px;color:var(--red)}
+
+  .btn{display:block;width:100%;margin-top:22px;padding:16px;font:inherit;font-size:17px;background:var(--ink);color:#fff;border:1px solid var(--ink);
+       cursor:pointer;text-transform:lowercase;text-align:center}
+  .btn:disabled{opacity:.3;cursor:default}
+  .btn.ghost{background:#fff;color:var(--ink)}
+  .link{background:none;border:0;font:inherit;color:var(--soft);text-decoration:underline;cursor:pointer;margin-top:14px;font-size:15px;text-transform:lowercase}
+
+  input[type=text],input[type=email]{width:100%;font:inherit;font-size:19px;border:0;border-bottom:1px solid var(--ink);padding:12px 0;outline:none;background:transparent;text-transform:lowercase;border-radius:0}
+  input::placeholder{color:#b5b5b5}
+
+  .slider{margin:8px 0 26px}
+  .slider .row{display:flex;justify-content:space-between;align-items:baseline}
+  .slider .val{font-size:40px;font-weight:500;letter-spacing:-.04em}
+  input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:2px;background:var(--ink);margin:16px 0 6px;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--ink);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--ink);border:0}
+  .scale{display:flex;justify-content:space-between;font-size:13px;color:var(--soft)}
+
+  .draw{position:relative;border:1px solid var(--ink);touch-action:none;background:
+        linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/25% 100%}
+  canvas#pad{display:block;width:100%;height:260px;cursor:crosshair}
+  .hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;color:var(--soft);font-size:16px;transition:opacity .3s}
+  .ends{display:flex;justify-content:space-between;font-size:12px;color:var(--soft);margin-top:6px}
+  .two{display:grid;grid-template-columns:1fr 2fr;gap:8px}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{background:var(--chip);border-radius:999px;padding:8px 13px;font-size:14px}
+
+  /* result */
+  .block{padding:26px 0;border-top:1px solid var(--line)}
+  .block:first-child{border-top:0;padding-top:0}
+  .typename{font-size:56px;line-height:.95;font-weight:500;letter-spacing:-.05em;margin:6px 0 14px}
+  .facts{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--ink)}
+  .fact{padding:14px 0;border-bottom:1px solid var(--ink)}
+  .fact:nth-child(odd){padding-right:10px}
+  .fact small{display:block;font-size:13px;color:var(--soft);margin-bottom:4px}
+  .fact b{font-size:22px;font-weight:500;letter-spacing:-.02em}
+  canvas#map{width:100%;height:220px;display:block;border-bottom:1px solid var(--ink)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--soft);margin-top:10px}
+  .legend span::before{content:"";display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}
+  .legend .g::before{background:var(--redsoft);border:1px solid var(--red)}
+  .legend .d::before{background:#fff;border:1px dashed var(--ink);border-radius:50%}
+  .use{border-top:1px solid var(--ink)}
+  .use div{display:grid;grid-template-columns:120px 1fr;gap:10px;padding:13px 0;border-bottom:1px solid var(--ink);font-size:16px;line-height:1.35}
+  .use b{font-weight:500}
+  .soon{position:relative;border:1px solid var(--ink);padding:34px 20px 24px;margin-top:10px}
+  .soon .tag{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#fff;padding:0 10px;font-size:13px;letter-spacing:.08em;color:var(--red);white-space:nowrap}
+  .soon .st{position:absolute;font-size:14px;line-height:1;color:var(--ink);background:#fff;padding:2px}
+  .soon .st.tl{top:-9px;left:-9px}.soon .st.tr{top:-9px;right:-9px}.soon .st.bl{bottom:-9px;left:-9px}.soon .st.br{bottom:-9px;right:-9px}
+  .soon h3{font-size:26px;letter-spacing:-.03em;margin-bottom:8px}
+  .soon ul{list-style:none;margin:18px 0 18px;border-top:1px solid var(--line)}
+  .soon li{padding:11px 0 11px 22px;border-bottom:1px solid var(--line);font-size:16px;position:relative;line-height:1.35}
+  .soon li::before{content:"✦";position:absolute;left:0;top:11px;color:var(--red);font-size:13px}
+  .soon li .blur{filter:blur(4px);user-select:none;color:#777}
+  .soon .early{font-size:14px;color:var(--soft);margin-top:4px}
+  details{font-size:15px;color:#555;line-height:1.5}
+  summary{cursor:pointer;color:var(--ink);font-size:16px;margin-bottom:8px}
+  .banner{background:var(--chip);padding:12px 14px;font-size:15px;margin-top:18px}
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--ink);color:#fff;padding:11px 16px;font-size:15px;transition:all .3s;z-index:9;text-transform:lowercase}
+  .toast.on{opacity:1;transform:translateX(-50%)}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+  .sheet{background:#fff;width:100%;max-width:400px;max-height:92vh;overflow:auto;padding:16px}
+  .sheet img{display:block;width:100%;max-width:260px;margin:0 auto;border:1px solid var(--line)}
+  .sheet .hint2{font-size:13px;color:var(--soft);text-align:center;margin-top:10px;line-height:1.4}
+  .sheet .x{display:block;margin:10px auto 0;background:none;border:0;font:inherit;color:var(--soft);cursor:pointer;text-transform:lowercase}
+  .foot{margin-top:40px;font-size:13px;color:var(--soft);display:flex;justify-content:space-between}
+  .foot a{color:var(--soft)}
+</style>
+</head>
+<body>
+
+<!-- hidden form so netlify detects the waitlist form on deploy -->
+<form name="waitlist" netlify netlify-honeypot="bot-field" hidden>
+  <input type="email" name="email"><input type="text" name="type"><input type="text" name="bot-field">
+</form>
+
+<main>
+  <div class="top">
+    <img class="logo" src="data:image/png;base64,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" alt="Wellness for Quitters.">
+    <div class="handle">@thewellnessforquitters</div>
+  </div>
+  <div class="bar"><i id="bar"></i></div>
+  <div id="app"></div>
+  <div class="foot"><span>a test about your energy, not your worth</span><a href="https://gridyourgoal.com">goal grid →</a></div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== settings ===== */
+const SITE = 'gridyourgoal.com/energy';
+const SUBSTACK = 'https://substack.com/@thewellnessforquitters';
+
+/* ===== questions =====  E early · M midday · L late · S sprinter · D steady */
+const Q = [
+  {q:'free day, no alarm. you wake up…', a:[
+    ['before 8, my body just does that',{E:2}], ['around 10',{M:2}], ["after 12. don't judge",{L:2}]]},
+  {q:'6am flight', a:[
+    ['fine',{E:2}], ["i'll survive with coffee",{M:2}], ["i'd book the night one",{L:2}]]},
+  {q:'your best ideas show up…', a:[
+    ['in the morning shower',{E:2}], ['somewhere in the afternoon',{M:2}], ['in bed at 1am',{L:2}]]},
+  {q:'11pm text: "come out?"', a:[
+    ["i'm asleep",{E:2}], ['depends where',{M:2}], ['on my way',{L:2}]]},
+  {q:'the worst part of your day', a:[
+    ["the evening, i'm empty",{E:2}], ['3pm',{M:2}], ['the alarm',{L:2}]]},
+  {q:'deadline in a week', a:[
+    ['one crazy night',{S:2}], ['a bit every day',{D:2}]]},
+  {q:'you can focus for…', a:[
+    ["an hour or two, then i'm dead",{S:2}], ['hours, if no one texts me',{D:2}]]},
+  {q:'a good day for you looks like', a:[
+    ['nothing, nothing, then everything',{S:2}], ['the same pace all day',{D:2}]]},
+  {type:'wake'},
+  {type:'draw'}
+];
+
+/* ===== types ===== */
+const TYPES = {
+  ES:{name:'sunrise sprinter', line:'sharp at 7, done by 3.',
+      about:"your brain is at its best before most people have opened their laptops. you work in short, intense bursts, and once they're used up, they're gone for the day. trying to be productive at night is a waste of your time."},
+  ED:{name:'early builder', line:'up early, steady till late afternoon.',
+      about:"you start early and keep a calm, even pace for hours. you don't need adrenaline to get things done, you need a routine and a quiet morning. your energy fades in the evening, so plan nothing important after dinner."},
+  MS:{name:'midday sprinter', line:'slow start, unstoppable around noon.',
+      about:"mornings are a warm-up for you. then somewhere around late morning you get a strong, focused burst where you can do a day's work in two hours. after that you need a real break, not more coffee."},
+  MD:{name:'daylight builder', line:'even energy all day, gone by 10pm.',
+      about:"your energy follows the sun: decent mornings, a long productive middle of the day, a soft landing in the evening. you're at your best with a normal schedule, and you fall apart a little without one."},
+  LS:{name:'night sprinter', line:'useless till noon, brilliant after 9pm.',
+      about:"you come alive when everyone else is winding down. your best work happens in late, intense sessions. forcing yourself into a 7am routine just makes you tired, it doesn't make you productive."},
+  LD:{name:'slow burner', line:'warms up all day, peaks late.',
+      about:"you need time to get going, but once you're in, you can focus for hours. your energy builds through the afternoon and stays high into the evening. you do your best work when nobody's interrupting you."}
+};
+
+/* ===== state ===== */
+const S = {name:'', E:0, M:0, L:0, S:0, D:0, wd:7.5, we:9, curve:null};
+let step = -1;
+const HIST = [];
+function apply(w){ add(w); HIST.push(w); }
+function back(){ if(step<=0){ step=-1; HIST.length=0; Object.assign(S,{E:0,M:0,L:0,S:0,D:0}); render(); return; } const w=HIST.pop()||{}; for(const k in w) S[k]-=w[k]; step--; render(); window.scrollTo(0,0); }
+const app = document.getElementById('app');
+const params = new URLSearchParams(location.search);
+const friend = params.get('t') && TYPES[params.get('t')] ? {
+  t: params.get('t'), n: params.get('n') || 'your friend', c: decodeCurve(params.get('c'))
+} : null;
+
+/* ===== helpers ===== */
+function add(w){ for(const k in w) S[k]+=w[k]; }
+function fmt(h){ h=((h%24)+24)%24; let H=Math.floor(h), M=Math.round((h-H)*60); if(M===60){H=(H+1)%24;M=0}
+  return String(H).padStart(2,'0')+':'+String(M).padStart(2,'0'); }
+function half(h){ return Math.round(h*2)/2; }
+function toast(t){ const e=document.getElementById('toast'); e.textContent=t; e.classList.add('on'); setTimeout(()=>e.classList.remove('on'),2400); }
+function setBar(){ const total=Q.length; const v = step<0?0:Math.min(1,(step)/total); document.getElementById('bar').style.width=(v*100)+'%'; }
+function next(){ step++; render(); window.scrollTo(0,0); }
+function encodeCurve(c){ return c.map(v=>Math.round(v*9)).join(''); }
+function decodeCurve(s){ if(!s||s.length!==21) return null; return s.split('').map(d=>(+d)/9); }
+
+/* ===== screens ===== */
+function intro(){
+  app.innerHTML = `<div class="screen">
+    <div class="step">free · 2 minutes</div>
+    <h1>what's your <span class="red">energy type?</span></h1>
+    <p>answer 8 quick questions, draw how your energy moves during the day, and find your golden hours: the part of the day when your brain actually works.</p>
+    <div class="chips" style="margin:22px 0 4px">${Object.values(TYPES).map(t=>`<span class="chip">${t.name}</span>`).join('')}</div>
+    ${friend?`<div class="banner">${friend.n} is a <b>${TYPES[friend.t].name}</b>. take it and see when you're both at your best.</div>`:''}
+    <input type="text" id="nm" placeholder="your first name (optional)" maxlength="18" style="margin-top:22px">
+    <button class="btn" id="go">start</button>
+  </div>`;
+  document.getElementById('go').onclick=()=>{ S.name=document.getElementById('nm').value.trim(); next(); };
+}
+
+function render(){
+  setBar();
+  if(step<0) return intro();
+  if(step>=Q.length) return result();
+  const q=Q[step], n=`<div class="step"><button class="back" id="back">← back</button><span>${step+1} of ${Q.length}</span></div>`;
+
+  if(q.type==='wake'){
+    app.innerHTML = `<div class="screen">${n}
+      <h2>when do you wake up?</h2>
+      <div class="slider"><div class="row"><span class="muted">on weekdays</span><span class="val" id="wdv">${fmt(S.wd)}</span></div>
+        <input type="range" id="wd" min="4.5" max="12" step=".25" value="${S.wd}"><div class="scale"><span>4:30</span><span>12:00</span></div></div>
+      <div class="slider"><div class="row"><span class="muted">on weekends (be honest)</span><span class="val" id="wev">${fmt(S.we)}</span></div>
+        <input type="range" id="we" min="4.5" max="14" step=".25" value="${S.we}"><div class="scale"><span>4:30</span><span>14:00</span></div></div>
+      <button class="btn" id="ok">next</button></div>`;
+    const a=document.getElementById('wd'), b=document.getElementById('we');
+    a.oninput=()=>{S.wd=+a.value;document.getElementById('wdv').textContent=fmt(S.wd)};
+    b.oninput=()=>{S.we=+b.value;document.getElementById('wev').textContent=fmt(S.we)};
+    document.getElementById('ok').onclick=()=>{ if(S.we<=7.75) apply({E:1}); else if(S.we<=9.75) apply({M:1}); else apply({L:1}); next(); };
+    bindBack(); return;
+  }
+  if(q.type==='draw'){
+    app.innerHTML = `<div class="screen">${n}
+      <h2>draw your energy on a normal day</h2>
+      <div class="draw"><canvas id="pad"></canvas><div class="hint" id="hint">drag from left to right</div></div>
+      <div class="ends"><span>6am</span><span>noon</span><span>6pm</span><span>midnight</span><span>2am</span></div>
+      <p class="muted" style="font-size:14px;margin-top:10px">high = full energy, low = nothing left</p>
+      <div class="two"><button class="btn ghost" id="clr">clear</button><button class="btn" id="ok" disabled>show my result</button></div></div>`;
+    setupPad(); bindBack(); return;
+  }
+  app.innerHTML = `<div class="screen">${n}<h2>${q.q}</h2>
+    <div class="opts">${q.a.map((o,i)=>`<button class="opt" data-i="${i}">${o[0]}</button>`).join('')}</div></div>`;
+  app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ apply(q.a[+b.dataset.i][1]); next(); });
+  bindBack();
+}
+
+function bindBack(){ const b=document.getElementById('back'); if(b) b.onclick=back; }
+
+/* ===== draw pad ===== */
+function setupPad(){
+  const c=document.getElementById('pad'), ctx=c.getContext('2d'), dpr=window.devicePixelRatio||1;
+  const W=c.clientWidth, H=c.clientHeight; c.width=W*dpr; c.height=H*dpr; ctx.scale(dpr,dpr);
+  let pts=[], drawing=false; const ok=document.getElementById('ok');
+  const paint=()=>{ ctx.clearRect(0,0,W,H); if(pts.length<2) return;
+    ctx.strokeStyle='#111'; ctx.lineWidth=3; ctx.lineJoin='round'; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y); pts.forEach(p=>ctx.lineTo(p.x,p.y)); ctx.stroke(); };
+  const pos=e=>{ const r=c.getBoundingClientRect(); return {x:Math.max(0,Math.min(W,e.clientX-r.left)), y:Math.max(0,Math.min(H,e.clientY-r.top))}; };
+  const check=()=>{ const span=pts.length?pts[pts.length-1].x-pts[0].x:0; ok.disabled = span < W*.6; };
+  c.style.touchAction='none';
+  c.addEventListener('pointerdown',e=>{ e.preventDefault(); try{c.setPointerCapture(e.pointerId)}catch(_){} drawing=true; pts=[pos(e)]; document.getElementById('hint').style.opacity=0; paint(); });
+  c.addEventListener('pointermove',e=>{ if(!drawing) return; e.preventDefault(); const p=pos(e); if(p.x>=pts[pts.length-1].x-2) pts.push(p); paint(); check(); });
+  ['pointerup','pointercancel','lostpointercapture'].forEach(t=>c.addEventListener(t,()=>{ drawing=false; check(); }));
+  document.getElementById('clr').onclick=()=>{ pts=[]; paint(); ok.disabled=true; document.getElementById('hint').style.opacity=1; };
+  ok.onclick=()=>{
+    const s=[]; for(let i=0;i<=20;i++){ const x=W*i/20; let best=pts[0]; for(const p of pts) if(Math.abs(p.x-x)<Math.abs(best.x-x)) best=p; s.push(1-best.y/H); }
+    // light smoothing
+    S.curve = s.map((v,i)=> (v*2 + (s[i-1]??v) + (s[i+1]??v))/4 );
+    const pi = S.curve.indexOf(Math.max(...S.curve)); const ph = 6+pi;
+    const w = {}; w[ph<11?'E':(ph<17?'M':'L')] = 3;
+    const mean = S.curve.reduce((a,b)=>a+b,0)/S.curve.length;
+    w[Math.max(...S.curve)-mean > .32 ? 'S':'D'] = 1;
+    apply(w);
+    next();
+  };
+}
+
+/* ===== analysis ===== */
+function analyse(){
+  const t = ['E','M','L'].sort((a,b)=>S[b]-S[a])[0];
+  const st = S.S>S.D ? 'S' : (S.D>S.S ? 'D' : (S.curve && Math.max(...S.curve)-avg(S.curve)>.32 ? 'S':'D'));
+  const key = t+st;
+  const c = S.curve;
+  const pi = c.indexOf(Math.max(...c)); const peak = 6+pi;
+  const win = st==='S' ? 1 : 1.5;
+  const g0 = half(peak-win), g1 = half(peak+win);
+  // dip: lowest point between 11:00 and 20:00, away from the peak
+  let di=-1, dv=9;
+  for(let i=5;i<=14;i++){ if(Math.abs(i-pi)<3) continue; if(c[i]<dv){dv=c[i];di=i;} }
+  const dip = di>=0 ? 6+di : null;
+  // second wind: a later rise after the dip
+  let sw=null;
+  if(di>=0){ let bi=-1,bv=dv+.18; for(let i=di+2;i<=18;i++){ if(Math.abs(i-pi)<3) continue; if(c[i]>bv){bv=c[i];bi=i;} } if(bi>=0) sw=6+bi; }
+  const lightsOut = S.wd + 16;
+  const shutdown = lightsOut - 1;
+  const jet = Math.abs(S.we - S.wd);
+  return {key, T:TYPES[key], peak, g0, g1, dip, sw, shutdown, lightsOut, jet};
+}
+function avg(a){ return a.reduce((x,y)=>x+y,0)/a.length; }
+
+/* ===== result ===== */
+let R=null;
+function result(){
+  document.getElementById('bar').style.width='100%';
+  R = analyse(); const T=R.T;
+  const hello = S.name ? S.name+', you are a' : 'you are a';
+  app.innerHTML = `<div class="screen">
+    <div class="block">
+      <div class="step">your result</div>
+      <p class="muted">${hello}</p>
+      <div class="typename">${T.name}</div>
+      <p style="color:var(--ink);font-size:19px;margin-bottom:12px">${T.line}</p>
+      <p>${T.about}</p>
+    </div>
+
+    <div class="block">
+      <h3>your energy map</h3>
+      <canvas id="map"></canvas>
+      <div class="ends"><span>6am</span><span>noon</span><span>6pm</span><span>midnight</span><span>2am</span></div>
+      <div class="legend"><span class="g">golden hours</span>${R.dip!==null?'<span class="d">the dip</span>':''}${friend&&friend.c?'<span style="color:#d23a2f">— '+friend.n+'</span>':''}</div>
+    </div>
+
+    <div class="block">
+      <div class="facts">
+        <div class="fact"><small>golden hours</small><b class="red">${fmt(R.g0)}–${fmt(R.g1)}</b></div>
+        <div class="fact"><small>the dip</small><b>${R.dip!==null?'~'+fmt(R.dip):'barely any'}</b></div>
+        <div class="fact"><small>second wind</small><b>${R.sw!==null?'~'+fmt(R.sw):'no'}</b></div>
+        <div class="fact"><small>screens off by</small><b>${fmt(R.shutdown)}</b></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>how to use it</h3>
+      <div class="use">
+        <div><b>${fmt(R.g0)}–${fmt(R.g1)}</b><span>your hardest task. phone in another room, no messages, no meetings.</span></div>
+        ${R.dip!==null?`<div><b>around ${fmt(R.dip)}</b><span>emails, errands, a walk. don't start anything that needs your full brain.</span></div>`:''}
+        ${R.sw!==null?`<div><b>around ${fmt(R.sw)}</b><span>a second, smaller window. good for creative stuff or a workout.</span></div>`:''}
+        <div><b>after ${fmt(R.shutdown)}</b><span>wind down. your wake-up time depends on it.</span></div>
+      </div>
+    </div>
+
+    ${R.jet>=1.5?`<div class="block"><h3>you have <span class="red">social jetlag</span></h3>
+      <p>your weekends start ${R.jet%1?R.jet.toFixed(1):R.jet} hours later than your weekdays. for your body, that's like flying between time zones every week, and it's a big part of why mondays feel so bad. try to keep the difference under an hour.</p></div>`
+      :`<div class="block"><h3>no social jetlag</h3><p>your weekdays and weekends start at about the same time. that's rare, and your body thanks you for it.</p></div>`}
+
+    ${friend?compareBlock():''}
+
+    <div class="block">
+      <h3>share it</h3>
+      <button class="btn" id="card">get my story card</button>
+      <button class="btn ghost" id="share">compare with a friend</button>
+    </div>
+
+    <div class="block">
+      <div class="soon">
+        <span class="tag">✦ coming soon ✦</span>
+        <span class="st tl">✦</span><span class="st tr">✦</span><span class="st bl">✦</span><span class="st br">✦</span>
+        <h3>the ${T.name} manual</h3>
+        <p>your result is the short version. the manual is the full one, written only for ${T.name}s.</p>
+        <ul>
+          <li>why you procrastinate, <span class="blur">and what actually works for your type</span></li>
+          <li>your ideal day, <span class="blur">hour by hour, built around your energy</span></li>
+          <li>when to study, work out, <span class="blur">have coffee and go to sleep</span></li>
+          <li>the habits that drain <span class="blur">your type the most, and what to do instead</span></li>
+          <li>a 7-day reset <span class="blur">to get back into your rhythm</span></li>
+        </ul>
+        <p style="color:var(--ink)">leave your email and you'll get it first.</p>
+        <p class="early">the early list gets a lower price.</p>
+        <input type="email" id="em" placeholder="your email" style="margin-top:8px">
+        <button class="btn" id="join">notify me</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <details><summary>how we calculate this</summary>
+        <p>everyone has a chronotype: a natural daily rhythm that decides when you're alert and when you're tired. it's partly genetic and it shifts with age. the questions place you on the early–late scale, your drawing shows where your energy actually peaks and drops, and the gap between your weekday and weekend wake-up times shows your social jetlag (a term from sleep research by till roenneberg). this test is for planning your day, not a medical assessment.</p>
+      </details>
+      <p style="margin-top:18px"><a href="${SUBSTACK}" target="_blank" rel="noopener" style="color:var(--ink)">weekly letters on substack →</a></p>
+      <button class="link" id="again">take it again</button>
+    </div>
+  </div>`;
+
+  drawMap();
+  document.getElementById('card').onclick=openCard;
+  buildCard();
+  document.getElementById('share').onclick=shareFriend;
+  document.getElementById('join').onclick=joinWaitlist;
+  document.getElementById('again').onclick=()=>{ Object.assign(S,{E:0,M:0,L:0,S:0,D:0,curve:null}); HIST.length=0; step=-1; render(); window.scrollTo(0,0); };
+}
+
+function compareBlock(){
+  if(!friend.c) return `<div class="block"><h3>you and ${friend.n}</h3><p>${friend.n} is a ${TYPES[friend.t].name}. you're a ${R.T.name}.</p></div>`;
+  let bi=0,bv=-1; for(let i=0;i<21;i++){ const v=Math.min(S.curve[i],friend.c[i]); if(v>bv){bv=v;bi=i;} }
+  const h=6+bi;
+  return `<div class="block"><h3>you and ${friend.n}</h3>
+    <p>${friend.n} is a ${TYPES[friend.t].name}. your best time together is around <b class="red">${fmt(h)}</b>: that's when you both still have energy. plan the important talks, the gym or the big tasks for then.</p></div>`;
+}
+
+/* ===== energy map canvas ===== */
+function drawMap(){
+  const c=document.getElementById('map'), ctx=c.getContext('2d'), dpr=window.devicePixelRatio||1;
+  const W=c.clientWidth, H=c.clientHeight; c.width=W*dpr; c.height=H*dpr; ctx.scale(dpr,dpr);
+  plot(ctx,W,H,S.curve,{golden:[R.g0,R.g1],dip:R.dip,friend:friend&&friend.c,lineW:3,font:13});
+}
+function plot(ctx,W,H,data,o){
+  const pad=8, x=h=>pad+(W-2*pad)*(h-6)/20, xi=i=>pad+(W-2*pad)*i/20, y=v=>H-pad-(H-2*pad)*v;
+  // grid
+  ctx.strokeStyle='#eee'; ctx.lineWidth=1; for(let k=1;k<4;k++){ const gx=W*k/4; ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,H); ctx.stroke(); }
+  // golden window
+  if(o.golden){ ctx.fillStyle='rgba(210,58,47,.12)'; ctx.fillRect(x(o.golden[0]),0,x(o.golden[1])-x(o.golden[0]),H);
+    ctx.strokeStyle='#d23a2f'; ctx.lineWidth=1; [o.golden[0],o.golden[1]].forEach(h=>{ctx.beginPath();ctx.moveTo(x(h),0);ctx.lineTo(x(h),H);ctx.stroke();}); }
+  const line=(d,col,w,dash)=>{ ctx.setLineDash(dash||[]); ctx.strokeStyle=col; ctx.lineWidth=w; ctx.lineJoin='round'; ctx.beginPath();
+    ctx.moveTo(xi(0),y(d[0])); for(let i=1;i<d.length;i++){ const xc=(xi(i-1)+xi(i))/2; ctx.quadraticCurveTo(xi(i-1),y(d[i-1]),xc,(y(d[i-1])+y(d[i]))/2); }
+    ctx.lineTo(xi(d.length-1),y(d[d.length-1])); ctx.stroke(); ctx.setLineDash([]); };
+  if(o.friend) line(o.friend,'#d23a2f',o.lineW-1,[6,6]);
+  line(data,'#111',o.lineW);
+  if(o.dip!==null && o.dip!==undefined){ const i=o.dip-6; ctx.fillStyle='#fff'; ctx.strokeStyle='#111'; ctx.lineWidth=1.5; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.arc(xi(i),y(data[i]),o.font*.55,0,Math.PI*2); ctx.fill(); ctx.stroke(); ctx.setLineDash([]); }
+}
+
+/* ===== story card ===== */
+async function buildCard(){
+  try{ await document.fonts.load('500 120px Geist'); await document.fonts.load('400 40px Geist'); }catch(e){}
+  const c=document.createElement('canvas'); c.width=1080; c.height=1920; const x=c.getContext('2d');
+  x.fillStyle='#fff'; x.fillRect(0,0,1080,1920);
+  const lg=document.querySelector('.logo'); if(lg && lg.complete){ const lh=120, lw=lg.naturalWidth*lh/lg.naturalHeight, k=Math.min(1,900/lw); x.drawImage(lg,90,95,lw*k,lh*k); }
+  x.fillStyle='#111'; x.fillRect(90,240,900,6);
+  x.textAlign='left'; x.font='400 40px Geist'; x.fillStyle='#8c8c8c'; x.fillText((S.name?S.name+"'s":'my')+' energy type',90,380);
+  x.fillStyle='#111'; x.font='500 132px Geist';
+  const words=R.T.name.split(' '); x.fillText(words[0],80,540); x.fillText(words.slice(1).join(' '),80,680);
+  x.font='400 44px Geist'; x.fillText(R.T.line,90,780);
+  x.save(); x.translate(90,880); plot(x,900,520,S.curve,{golden:[R.g0,R.g1],dip:R.dip,lineW:7,font:30}); x.restore();
+  x.strokeStyle='#111'; x.lineWidth=3; x.beginPath(); x.moveTo(90,1400); x.lineTo(990,1400); x.stroke();
+  x.fillStyle='#8c8c8c'; x.font='400 30px Geist'; x.fillText('6am',90,1450); x.textAlign='center'; x.fillText('noon',315,1450); x.fillText('6pm',540,1450); x.fillText('midnight',765,1450); x.textAlign='right'; x.fillText('2am',990,1450);
+  x.textAlign='left'; x.font='400 38px Geist'; x.fillText('golden hours',90,1580);
+  x.fillStyle='#d23a2f'; x.font='500 84px Geist'; x.fillText(fmt(R.g0)+'–'+fmt(R.g1),90,1680);
+  x.fillStyle='#111'; x.font='400 36px Geist'; x.fillText('find yours · '+SITE,90,1830);
+  const blob = await new Promise(r=>c.toBlob(r,'image/png'));
+  R.cardBlob = blob;
+  R.cardFile = new File([blob],'my-energy-type.png',{type:'image/png'});
+  R.cardURL = URL.createObjectURL(blob);
+}
+
+function openCard(){
+  if(!R.cardURL){ toast('one second…'); buildCard().then(openCard); return; }
+  const canShare = !!(navigator.canShare && navigator.canShare({files:[R.cardFile]}));
+  const m=document.createElement('div'); m.className='modal';
+  m.innerHTML = `<div class="sheet">
+    <img src="${R.cardURL}" alt="your energy type card">
+    ${canShare?`<button class="btn" id="shareCard">share or save</button>
+      <p class="hint2">opens your phone's menu: instagram stories, save to photos, messages and more</p>`:''}
+    <button class="btn ${canShare?'ghost':''}" id="dlCard">download</button>
+    ${!canShare?'<p class="hint2">on a phone you can also press and hold the image to save it</p>':''}
+    <button class="x" id="closeCard">close</button></div>`;
+  document.body.appendChild(m);
+  m.addEventListener('click',e=>{ if(e.target===m) m.remove(); });
+  m.querySelector('#closeCard').onclick=()=>m.remove();
+  m.querySelector('#dlCard').onclick=()=>{ const a=document.createElement('a'); a.href=R.cardURL; a.download='my-energy-type.png'; document.body.appendChild(a); a.click(); a.remove(); };
+  const sb=m.querySelector('#shareCard');
+  if(sb) sb.onclick=()=>{ navigator.share({files:[R.cardFile], title:'my energy type', text:"i'm a "+R.T.name+'. find yours: '+SITE}).catch(()=>{}); };
+}
+
+/* ===== compare ===== */
+function shareFriend(){
+  const url = location.origin+location.pathname+'?t='+R.key+'&n='+encodeURIComponent(S.name||'')+'&c='+encodeCurve(S.curve);
+  const text = "i'm a "+R.T.name+". what's your energy type?";
+  if(navigator.share){ navigator.share({title:"what's your energy type?",text,url}).catch(()=>{}); }
+  else if(navigator.clipboard){ navigator.clipboard.writeText(text+' '+url).then(()=>toast('link copied, send it to someone')); }
+  else prompt('copy this link',url);
+}
+
+/* ===== waitlist (netlify forms) ===== */
+async function joinWaitlist(){
+  const em=document.getElementById('em').value.trim();
+  if(!/^\S+@\S+\.\S+$/.test(em)) return toast('add a valid email');
+  const body=new URLSearchParams({'form-name':'waitlist', email:em, type:R.T.name}).toString();
+  try{
+    const r=await fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
+    if(!r.ok) throw 0;
+    document.getElementById('join').textContent="you're on the list";
+    document.getElementById('join').disabled=true;
+    toast("you're on the list ✦");
+  }catch(e){ toast('something went wrong, try again'); }
+}
+
+render();
+</script>
+</body>
+</html>
